@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>请使用浏览器打开</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 30px 20px;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .browser-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0 30px;
+        }
+        
+        .browser-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f7fa;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .browser-icon i {
+            font-size: 28px;
+            color: #2575fc;
+        }
+        
+        .steps {
+            text-align: left;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .step {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+        
+        .step:last-child {
+            margin-bottom: 0;
+        }
+        
+        .step-number {
+            background: #2575fc;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            margin-right: 12px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .btn {
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: #2575fc;
+            color: white;
+            box-shadow: 0 5px 15px rgba(37, 117, 252, 0.3);
+        }
+        
+        .btn-primary:active {
+            background: #1a68e3;
+            transform: translateY(2px);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #2575fc;
+            border: 1px solid #e1e5eb;
+        }
+        
+        .btn-secondary:active {
+            background: #e9ecef;
+        }
+        
+        .link-display {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #e1e5eb;
+        }
+        
+        .link-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            text-align: left;
+            color: #495057;
+        }
+        
+        .copy-btn {
+            background: #2575fc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 10px;
+            flex-shrink: 0;
+        }
+        
+        .copy-btn:active {
+            background: #1a68e3;
+        }
+        
+        .success-message {
+            color: #28a745;
+            margin-top: 10px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .footer {
+            padding: 20px;
+            color: #6c757d;
+            font-size: 14px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        /* 手指引导动画 */
+        .finger-guide {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 10;
+            animation: finger-move 2s infinite;
+        }
+        
+        .finger-guide i {
+            font-size: 28px;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        @keyframes finger-move {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-5px, 5px) scale(1.1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-10px, 10px) scale(1);
+                opacity: 0;
+            }
+        }
+        
+        /* 微信/QQ图标 */
+        .app-icon {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .app-icon i {
+            font-size: 24px;
+            color: #07C160;
+        }
+        
+        .qq-icon i {
+            color: #12B7F5;
+        }
+        
+        /* 移动端优化 */
+        @media (max-width: 480px) {
+            .container {
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 25px 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .browser-icons {
+                gap: 15px;
+            }
+            
+            .browser-icon {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .finger-guide {
+                top: 10px;
+                right: 10px;
+            }
+            
+            .finger-guide i {
+                font-size: 24px;
+            }
+        }
+        
+        /* 防止长按菜单 */
+        .no-context-menu {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="no-context-menu">
+    <div class="container">
+        <div class="header">
+            <!-- 微信/QQ图标 -->
+            <div class="app-icon" id="app-icon">
+                <i class="fab fa-weixin"></i>
+            </div>
+            
+            <!-- 手指引导 -->
+            <div class="finger-guide">
+                <i class="fas fa-hand-point-up"></i>
+            </div>
+            
+            <h1>请在浏览器中打开</h1>
+            <p>为了更好的体验，请在手机浏览器中访问此页面</p>
+        </div>
+        
+        <div class="content">
+            <div class="browser-icons">
+                <div class="browser-icon">
+                    <i class="fab fa-chrome"></i>
+                </div>
+                <div class="browser-icon">
+                    <i class="fab fa-safari"></i>
+                </div>
+                <div class="browser-icon">
+                    <i class="fab fa-firefox"></i>
+                </div>
+            </div>
+            
+            <p>检测到您在微信/QQ中打开，部分功能可能受限，建议使用浏览器打开以获得完整体验。</p>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>点击右上角 <strong>...</strong> 按钮</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>选择 <strong>在浏览器中打开</strong></div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>在浏览器中访问此页面</div>
+                </div>
+            </div>
+            
+            <div class="link-display">
+                <div class="link-text" id="link-text">https://fb.qdd.ink</div>
+                <button class="copy-btn" id="copy-btn">复制</button>
+            </div>
+            <div class="success-message" id="success-message">链接已复制到剪贴板！</div>
+            
+            <div class="actions">
+                <button class="btn btn-primary" id="open-browser-btn">
+                    <i class="fas fa-external-link-alt"></i>
+                    在浏览器中打开
+                </button>
+                <button class="btn btn-secondary" id="stay-here-btn">
+                    <i class="fas fa-times"></i>
+                    暂不打开
+                </button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 年 钱多多 版权所有</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检测是否在微信或QQ中打开
+            const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+            const isQQ = /QQ/i.test(navigator.userAgent);
+            
+            // 更新应用图标
+            const appIcon = document.getElementById('app-icon');
+            if (isWeChat) {
+                appIcon.innerHTML = '<i class="fab fa-weixin"></i>';
+            } else if (isQQ) {
+                appIcon.innerHTML = '<i class="fab fa-qq"></i>';
+                appIcon.classList.add('qq-icon');
+            }
+            
+            // 如果不在微信或QQ中，可以显示不同的内容或重定向
+            if (!isWeChat && !isQQ) {
+                // 这里可以添加不在微信/QQ中的处理逻辑
+                // 例如：window.location.href = "https://fb.qdd.ink/your-actual-page";
+            }
+            
+            // 复制链接功能
+            const copyBtn = document.getElementById('copy-btn');
+            const linkText = document.getElementById('link-text');
+            const successMessage = document.getElementById('success-message');
+            
+            copyBtn.addEventListener('click', function() {
+                // 创建一个临时的textarea元素来复制文本
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = linkText.textContent;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+                
+                // 显示成功消息
+                successMessage.style.display = 'block';
+                setTimeout(function() {
+                    successMessage.style.display = 'none';
+                }, 2000);
+            });
+            
+            // 在浏览器中打开按钮
+            const openBrowserBtn = document.getElementById('open-browser-btn');
+            openBrowserBtn.addEventListener('click', function() {
+                // 在微信/QQ中，无法直接打开外部浏览器
+                // 这里可以显示一个提示，指导用户如何操作
+                alert('请点击右上角菜单，选择"在浏览器中打开"');
+            });
+            
+            // 暂不打开按钮
+            const stayHereBtn = document.getElementById('stay-here-btn');
+            stayHereBtn.addEventListener('click', function() {
+                // 这里可以添加用户选择留在当前页面的逻辑
+                alert('您可以选择继续在当前页面浏览，但部分功能可能受限。');
+            });
+        });
+    </script>
+</body>
+</html>
