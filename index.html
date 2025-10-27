@@ -175,6 +175,11 @@
         width: 100%;
         white-space: nowrap;
         letter-spacing: 0.2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      @media (max-width: 380px) {
+        .btn { font-size: 13px; padding: 10px 12px; letter-spacing: 0; }
       }
       .btn-primary { background: linear-gradient(135deg, var(--brand-start), var(--brand-end)); color: #fff; }
       .btn-secondary { background: #eef3ff; color: #1f3e96; }
@@ -192,9 +197,9 @@
       /* 链接卡片内的设备信息（简版） */
       .target .device-inline {
         flex: 0 0 auto;
-        font-size: 12px;
+        font-size: 11px;
         color: var(--muted);
-        max-width: 40%;
+        max-width: 35%;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -400,8 +405,8 @@
           </div>
 
           <div class="actions">
-            <button class="btn btn-primary" id="copyBtn" type="button">复制链接并前往浏览器</button>
-            <button class="btn btn-secondary" id="fallbackBtn" type="button">遇到问题？查看备用操作</button>
+            <button class="btn btn-primary" id="copyBtn" type="button">复制并打开浏览器</button>
+            <button class="btn btn-secondary" id="fallbackBtn" type="button">查看备用操作</button>
           </div>
           <div class="target" id="targetBox" role="button" aria-label="复制链接并在浏览器打开">
             <span class="url" id="targetUrl">https://fb.qdd.ink</span>
@@ -636,7 +641,10 @@
           var deviceType = isIOS ? '苹果' : (isAndroid ? '安卓' : '设备');
           var envUnified = isWeChat ? '微信' : (isQQApp ? 'QQ' : '浏览器');
           var label = deviceType + ' ' + deviceLabel + (osVer ? (' ' + osVer) : '') + ' · ' + envUnified;
-          var inlineLabel = deviceType + ' ' + deviceLabel + (osVer ? (' ' + osVer) : '');
+          var inlineLabel = deviceType + ' ' + deviceLabel;
+          if (/设备$/.test(deviceLabel) || /未知设备/.test(deviceLabel)) {
+            inlineLabel = deviceType;
+          }
           if (deviceBadgeEl) deviceBadgeEl.textContent = label;
           if (footerDeviceEl) footerDeviceEl.textContent = label;
           if (deviceInlineEl) deviceInlineEl.textContent = inlineLabel;
