@@ -483,24 +483,24 @@
           return '';
         }
 
-        // iOS机型识别（基于屏幕尺寸 + DPR，近似推断）
+        // iOS机型识别（基于屏幕尺寸 + DPR，近似推断，优先显示最新机型）
         function detectIOSModel() {
           var w = Math.min(window.screen.width, window.screen.height);
           var h = Math.max(window.screen.width, window.screen.height);
           var dpr = window.devicePixelRatio || 1;
           var key = w + 'x' + h + '@' + dpr;
           var map = {
-            '320x568@2': 'iPhone SE (第一代)/5/5s',
-            '375x667@2': 'iPhone 6/6s/7/8/SE (第二/三代)',
-            '414x736@3': 'iPhone 6+/6s+/7+/8+',
-            '375x812@3': 'iPhone X/XS/11 Pro',
-            '414x896@2': 'iPhone XR/11',
-            '414x896@3': 'iPhone XS Max/11 Pro Max',
-            '360x780@3': 'iPhone 12 mini/13 mini',
-            '390x844@3': 'iPhone 12/12 Pro/13/13 Pro/14/15 (6.1")',
-            '393x852@3': 'iPhone 14 Pro / 15 Pro',
-            '430x932@3': 'iPhone 14 Pro Max / 15 Pro Max',
-            '428x926@3': 'iPhone 12 Pro Max / 13 Pro Max'
+            '320x568@2': 'iPhone SE (第一代)',
+            '375x667@2': 'iPhone 8/SE (第二/三代)',
+            '414x736@3': 'iPhone 8 Plus',
+            '375x812@3': 'iPhone 11 Pro',
+            '414x896@2': 'iPhone 11',
+            '414x896@3': 'iPhone 11 Pro Max',
+            '360x780@3': 'iPhone 13 mini',
+            '390x844@3': 'iPhone 15',
+            '393x852@3': 'iPhone 15 Pro',
+            '430x932@3': 'iPhone 15 Pro Max',
+            '428x926@3': 'iPhone 14 Plus'
           };
           var model = map[key];
           if (model) return model;
@@ -600,7 +600,7 @@
           var deviceLabel = isAndroid ? parseAndroidBrandModel() : parseDeviceLabel();
           var osVer = parseOSVersion();
           var deviceType = isIOS ? '苹果' : (isAndroid ? '安卓' : '设备');
-          var envUnified = (isWeChat || isQQApp) ? 'QQ/微信' : '浏览器';
+          var envUnified = isWeChat ? '微信' : (isQQApp ? 'QQ' : '浏览器');
           var label = deviceType + ' ' + deviceLabel + (osVer ? (' ' + osVer) : '') + ' · ' + envUnified;
           if (deviceBadgeEl) deviceBadgeEl.textContent = label;
           if (footerDeviceEl) footerDeviceEl.textContent = label;
