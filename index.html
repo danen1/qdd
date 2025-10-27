@@ -161,7 +161,7 @@
         font-size: 13px;
         margin-top: 2px;
       }
-      .actions { display: flex; gap: 10px; margin-top: 16px; }
+      .actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 16px; align-items: stretch; }
       .btn {
         padding: 10px 14px;
         border-radius: 10px;
@@ -170,6 +170,8 @@
         font-size: 14px;
         box-shadow: 0 2px 10px var(--ring);
         transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease;
+        width: 100%;
+        white-space: nowrap;
       }
       .btn-primary { background: linear-gradient(135deg, var(--brand-start), var(--brand-end)); color: #fff; }
       .btn-secondary { background: #eef3ff; color: #1f3e96; }
