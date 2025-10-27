@@ -99,13 +99,14 @@
         padding: 12px 14px;
         border-radius: 12px;
         background: #ffffff;
-        border: 1px solid #e5e7eb;
+        border: none;
         box-shadow: 0 1px 2px rgba(0,0,0,0.06);
         display: flex;
         align-items: center;
         gap: 10px;
         cursor: pointer;
         transition: background 0.2s ease, transform 0.08s ease;
+        position: relative;
       }
       .target:active { transform: scale(0.995); }
       .target::before {
@@ -126,8 +127,7 @@
         flex: 0 0 auto;
         font-size: 12px;
         color: #2563eb;
-        opacity: 0;
-        transition: opacity 0.2s ease;
+        display: none;
       }
       /* 链接卡片尾部复制徽标 */
       .chip-copy {
@@ -145,33 +145,36 @@
       .chip-copy:active { transform: scale(0.98); }
       @keyframes flashCopy { 0% { background: #f3f6ff; } 20% { background: #e8f0ff; } 100% { background: #f3f6ff; } }
       .target.ok { animation: flashCopy 1.2s ease; }
-      .target.ok .status { opacity: 1; }
+      /* 状态提示不再显示 */
       .steps { display: grid; gap: 12px; margin-top: 6px; }
       .step { display: flex; gap: 12px; align-items: flex-start; }
       .step .num {
-        flex: 0 0 24px;
-        height: 24px;
+        flex: 0 0 26px;
+        height: 26px;
         border-radius: 50%;
-        background: #e7efff;
-        color: #2456c3;
+        background: linear-gradient(135deg, var(--brand-start), var(--brand-end));
+        color: #fff;
         font-weight: 700;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         font-size: 13px;
         margin-top: 2px;
+        box-shadow: 0 2px 8px var(--ring);
       }
       .actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 16px; align-items: stretch; }
       .btn {
-        padding: 10px 14px;
-        border-radius: 10px;
+        padding: 12px 16px;
+        border-radius: 12px;
         border: none;
         cursor: pointer;
-        font-size: 14px;
-        box-shadow: 0 2px 10px var(--ring);
+        font-size: 15px;
+        font-weight: 700;
+        box-shadow: 0 4px 14px var(--ring);
         transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease;
         width: 100%;
         white-space: nowrap;
+        letter-spacing: 0.2px;
       }
       .btn-primary { background: linear-gradient(135deg, var(--brand-start), var(--brand-end)); color: #fff; }
       .btn-secondary { background: #eef3ff; color: #1f3e96; }
@@ -186,6 +189,36 @@
       .footer-device { color: var(--muted); font-weight: 500; }
       .footer a { color: #475569; text-decoration: none; }
       .footer a:hover { text-decoration: underline; }
+      /* 链接卡片内的设备信息（简版） */
+      .target .device-inline {
+        flex: 0 0 auto;
+        font-size: 12px;
+        color: var(--muted);
+        max-width: 40%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      @media (max-width: 360px) { .target .device-inline { display: none; } }
+      /* 隐藏顶部与页脚的设备信息 */
+      .device-badge { display: none !important; }
+      .footer-device { display: none !important; }
+      /* 链接卡片内的设备信息已移除 */
+      /* 渐变边框：使用遮罩伪元素，不影响主题背景 */
+      .target::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(135deg, var(--brand-start), var(--brand-end));
+        -webkit-mask: 
+          linear-gradient(#000 0 0) content-box,
+          linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+      }
       .hint-corner {
         position: absolute;
         right: 14px;
@@ -249,10 +282,10 @@
         }
         .card { background: #151922; box-shadow: 0 8px 24px rgba(0,0,0,0.6); }
         .card__header { background: linear-gradient(90deg, var(--brand-start) 0%, var(--brand-end) 100%); }
-        .target { background: #0f1624; border-color: #23314d; color: #c7d2fe; }
+        .target { background: #0f1624; color: #c7d2fe; }
         .btn-secondary { background: #1f2937; color: #c7d2fe; }
         .subtle { color: #9ca3af; }
-        .step .num { background: #1f2937; color: #93c5fd; }
+        .step .num { background: linear-gradient(135deg, var(--brand-start), var(--brand-end)); color: #fff; box-shadow: 0 2px 8px var(--ring); }
         .footer-guide { background: #1f2937; color: #dbeafe; border-color: #334155; }
         .chip-copy { background: transparent; color: #93c5fd; border-color: #334155; }
         .corner-tag { background: rgba(22,26,34,0.9); color: #cbd5e1; border-color: rgba(255,255,255,0.12); box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
@@ -265,7 +298,7 @@
       /* 主题套件：10种不同风格 */
       /* 01 极简扁平 */
       .theme-01 .card { box-shadow: none; border: 1px solid #e5e7eb; }
-      .theme-01 .target { background: #fff; border-color: #e5e7eb; box-shadow: none; }
+      .theme-01 .target { background: #fff; box-shadow: none; }
       .theme-01 .chip-copy { border-color: #e5e7eb; color: #475569; }
       .theme-01 .corner-tag { box-shadow: none; border-color: #e5e7eb; background: #fff; }
       .theme-01 .btn { box-shadow: none; }
@@ -273,21 +306,21 @@
       /* 02 柔和新拟态 */
       .theme-02 body { background: #eef2f7; }
       .theme-02 .card { background: #eef2f7; box-shadow: 8px 8px 16px #cdd3db, -8px -8px 16px #ffffff; border: none; }
-      .theme-02 .target { background: #eef2f7; border-color: #dde2ea; box-shadow: inset 2px 2px 4px #d0d6de, inset -2px -2px 4px #f7f9fb; }
+      .theme-02 .target { background: #eef2f7; box-shadow: inset 2px 2px 4px #d0d6de, inset -2px -2px 4px #f7f9fb; }
       .theme-02 .chip-copy { background: #eef2f7; border-color: #dde2ea; color: #334155; }
       .theme-02 .corner-tag { background: #eef2f7; border: 1px solid #dde2ea; box-shadow: 4px 4px 8px #d0d6de, -4px -4px 8px #f7f9fb; }
 
       /* 03 玻璃拟态 */
       .theme-03 body { background: linear-gradient(135deg, #c3d9ff 0%, #f6f7fb 100%); }
       .theme-03 .card { background: rgba(255,255,255,0.45); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); }
-      .theme-03 .target { background: rgba(255,255,255,0.35); border-color: rgba(215,220,235,0.6); }
+      .theme-03 .target { background: rgba(255,255,255,0.35); }
       .theme-03 .chip-copy { background: rgba(255,255,255,0.35); border-color: rgba(215,220,235,0.7); }
       .theme-03 .corner-tag { background: rgba(255,255,255,0.5); border-color: rgba(215,220,235,0.8); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
 
       /* 04 高对比黑白 */
       .theme-04 body { background: #000; color: #111; }
       .theme-04 .card { background: #fff; box-shadow: none; border: 2px solid #000; }
-      .theme-04 .target { background: #fff; border-color: #000; }
+      .theme-04 .target { background: #fff; }
       .theme-04 .chip-copy { background: #000; color: #fff; border-color: #000; }
       .theme-04 .corner-tag { background: #000; color: #fff; border-color: #000; }
       .theme-04 .btn-primary { background: #000; color: #fff; }
@@ -296,35 +329,35 @@
       /* 05 品牌渐变强化 */
       .theme-05 .card__header { background: linear-gradient(120deg, var(--brand-start), var(--brand-end)); }
       .theme-05 .card { border: 1px solid #cfe3ff; box-shadow: 0 8px 24px rgba(59,130,246,0.25); }
-      .theme-05 .target { border-color: #cfe3ff; background: #f6fbff; }
+      .theme-05 .target { background: #f6fbff; }
       .theme-05 .chip-copy { color: #1f3e96; border-color: #cfe3ff; background: #eef6ff; }
       .theme-05 .corner-tag { background: #eef6ff; color: #1f3e96; border-color: #cfe3ff; }
 
       /* 06 马卡龙柔彩 */
       .theme-06 body { background: #fff7f1; }
       .theme-06 .card { background: #fff; border: 1px solid #ffd6ba; box-shadow: 0 6px 18px rgba(255, 182, 150, 0.25); }
-      .theme-06 .target { background: #fffaf6; border-color: #ffd6ba; }
+      .theme-06 .target { background: #fffaf6; }
       .theme-06 .chip-copy { background: #fffaf6; border-color: #ffc2a1; color: #a92e20; }
       .theme-06 .corner-tag { background: #fffaf6; border-color: #ffd6ba; color: #a92e20; }
 
       /* 07 Material 风格 */
       .theme-07 body { background: #f3f4f6; }
       .theme-07 .card { background: #fff; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.08); }
-      .theme-07 .target { background: #fff; border-color: #e5e7eb; }
+      .theme-07 .target { background: #fff; }
       .theme-07 .chip-copy { background: #e8ecff; border-color: #c7d2fe; color: #213a98; }
       .theme-07 .corner-tag { background: #fff; border-color: #e5e7eb; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
 
       /* 08 单色灰阶 */
       .theme-08 body { background: #f5f5f5; color: #1f2937; }
       .theme-08 .card { background: #fff; border: 1px solid #d1d5db; box-shadow: none; }
-      .theme-08 .target { background: #fff; border-color: #d1d5db; }
+      .theme-08 .target { background: #fff; }
       .theme-08 .chip-copy { background: transparent; border-color: #d1d5db; color: #374151; }
       .theme-08 .corner-tag { background: #fff; border-color: #d1d5db; color: #374151; box-shadow: none; }
 
       /* 09 终端绿风（Matrix） */
       .theme-09 body { background: #0b0e12; color: #00ff88; }
       .theme-09 .card { background: #0e151e; border: 1px solid #0f5132; box-shadow: 0 8px 24px rgba(0,255,136,0.15); }
-      .theme-09 .target { background: #0e151e; border-color: #0f5132; color: #00ff88; }
+      .theme-09 .target { background: #0e151e; color: #00ff88; }
       .theme-09 .chip-copy { background: transparent; border-color: #00ff88; color: #00ff88; }
       .theme-09 .corner-tag { background: rgba(0,0,0,0.65); color: #00ff88; border-color: #0f5132; }
       .theme-09 .btn-primary { background: #00ff88; color: #0b0e12; }
@@ -332,7 +365,7 @@
       /* 10 iOS 风（毛玻璃+圆角） */
       .theme-10 body { background: #f2f5f9; }
       .theme-10 .card { background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border: 1px solid rgba(215,220,235,0.7); box-shadow: 0 12px 28px rgba(0,0,0,0.12); }
-      .theme-10 .target { background: rgba(255,255,255,0.85); border-color: rgba(215,220,235,0.8); }
+      .theme-10 .target { background: rgba(255,255,255,0.85); }
       .theme-10 .chip-copy { background: rgba(255,255,255,0.8); border-color: rgba(215,220,235,0.8); color: #0b2a66; }
       .theme-10 .corner-tag { background: rgba(255,255,255,0.9); border-color: rgba(215,220,235,0.85); box-shadow: 0 10px 24px rgba(0,0,0,0.12); }
     </style>
@@ -362,12 +395,6 @@
         <div class="card__body">
           <div id="sceneDesc">已检测到在微信或QQ内打开，此页面受限。</div>
           <div class="device-badge" id="deviceBadge" aria-live="polite">设备与场景识别中…</div>
-          <div class="target" id="targetBox" role="button" aria-label="复制链接并在浏览器打开">
-            <span class="url" id="targetUrl">https://fb.qdd.ink</span>
-            <span class="status" id="copyStatus">已复制</span>
-            <button class="chip-copy" id="inlineCopy" type="button" aria-label="复制链接">复制</button>
-          </div>
-
           <div class="steps" id="steps">
             <!-- 动态填充平台步骤 -->
           </div>
@@ -376,10 +403,15 @@
             <button class="btn btn-primary" id="copyBtn" type="button">复制链接并前往浏览器</button>
             <button class="btn btn-secondary" id="fallbackBtn" type="button">遇到问题？查看备用操作</button>
           </div>
+          <div class="target" id="targetBox" role="button" aria-label="复制链接并在浏览器打开">
+            <span class="url" id="targetUrl">https://fb.qdd.ink</span>
+            <span class="device-inline" id="deviceInline"></span>
+            <button class="chip-copy" id="inlineCopy" type="button" aria-label="复制链接">复制</button>
+          </div>
           <div class="subtle" id="tips">无法复制？可长按上方链接手动复制</div>
           <div class="footer footer-row" id="footerRow">
             <span class="footer-device" id="footerDevice">设备识别中…</span>
-            <span class="footer-copy" id="copyright">© 2025 qdd.ink · 保留所有权利</span>
+            <span class="footer-copy" id="copyright">钱多多© 2025 qdd.ink · 保留所有权利</span>
             <a class="footer-copy" id="signatureLink" href="https://t.me/epay413" target="_blank" rel="noopener noreferrer">✈️@epay413</a>
           </div>
         </div>
@@ -426,8 +458,8 @@
         var sceneDesc = document.getElementById('sceneDesc');
         var targetUrlEl = document.getElementById('targetUrl');
         var targetBox = document.getElementById('targetBox');
-        var copyStatusEl = document.getElementById('copyStatus');
         var inlineCopyEl = document.getElementById('inlineCopy');
+        var deviceInlineEl = document.getElementById('deviceInline');
         var subtitleEl = document.getElementById('subtitle');
         var deviceBadgeEl = document.getElementById('deviceBadge');
         var footerDeviceEl = document.getElementById('footerDevice');
@@ -604,8 +636,10 @@
           var deviceType = isIOS ? '苹果' : (isAndroid ? '安卓' : '设备');
           var envUnified = isWeChat ? '微信' : (isQQApp ? 'QQ' : '浏览器');
           var label = deviceType + ' ' + deviceLabel + (osVer ? (' ' + osVer) : '') + ' · ' + envUnified;
+          var inlineLabel = deviceType + ' ' + deviceLabel + (osVer ? (' ' + osVer) : '');
           if (deviceBadgeEl) deviceBadgeEl.textContent = label;
           if (footerDeviceEl) footerDeviceEl.textContent = label;
+          if (deviceInlineEl) deviceInlineEl.textContent = inlineLabel;
         }
 
         function renderSteps() {
@@ -706,14 +740,14 @@
             e.stopPropagation();
             tryCopy(TARGET_URL);
             targetBox.classList.add('ok');
-            copyStatusEl.textContent = isIOS ? '已复制，前往 Safari' : '已复制，前往浏览器';
+            // 状态文案已移除
             setTimeout(function () { targetBox.classList.remove('ok'); }, 1600);
           });
         }
         targetBox.addEventListener('click', function () {
           tryCopy(TARGET_URL);
           targetBox.classList.add('ok');
-          copyStatusEl.textContent = isIOS ? '已复制，前往 Safari' : '已复制，前往浏览器';
+          // 状态文案已移除
           setTimeout(function () {
             targetBox.classList.remove('ok');
           }, 1600);
