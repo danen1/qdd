@@ -426,6 +426,12 @@
     <script>
       (function () {
         var TARGET_URL = 'https://fb.qdd.ink';
+        var DEFAULT_CONFIG = {
+          target_url: TARGET_URL,
+          contact: 'https://t.me/epay413',
+          copyright: '© 2025 qdd.ink · 保留所有权利'
+        };
+        var CONFIG = DEFAULT_CONFIG;
         var ua = navigator.userAgent || '';
         var uaLow = ua.toLowerCase();
         var params = new URLSearchParams(window.location.search);
@@ -469,11 +475,42 @@
         var deviceBadgeEl = document.getElementById('deviceBadge');
         var footerDeviceEl = document.getElementById('footerDevice');
         var signatureLinkEl = document.getElementById('signatureLink');
+        var copyrightEl = document.getElementById('copyright');
 
         targetUrlEl.textContent = TARGET_URL;
         // 联系方式可通过 ?contact=URL 覆盖，默认指向 Telegram
-        var contactUrl = params.get('contact') || 'https://t.me/epay413';
+        var contactUrl = params.get('contact') || (CONFIG.contact || 'https://t.me/epay413');
         if (signatureLinkEl) { signatureLinkEl.href = contactUrl; }
+        if (copyrightEl && CONFIG.copyright) { copyrightEl.textContent = CONFIG.copyright; }
+
+        function applyConfig(cfg) {
+          CONFIG = Object.assign({}, DEFAULT_CONFIG, cfg || {});
+          if (CONFIG && typeof CONFIG.target_url === 'string' && CONFIG.target_url.trim()) {
+            TARGET_URL = CONFIG.target_url.trim();
+          }
+          // 若无 URL 覆盖，则应用后台的 contact
+          if (!params.get('contact') && signatureLinkEl && CONFIG.contact) {
+            signatureLinkEl.href = CONFIG.contact;
+          }
+          if (copyrightEl && CONFIG.copyright) {
+            copyrightEl.textContent = CONFIG.copyright;
+          }
+          if (targetUrlEl) targetUrlEl.textContent = TARGET_URL;
+        }
+
+        async function loadConfig() {
+          try {
+            var res = await fetch('/api/config');
+            if (res && res.ok) {
+              var data = await res.json();
+              applyConfig(data);
+            } else {
+              applyConfig(DEFAULT_CONFIG);
+            }
+          } catch (e) {
+            applyConfig(DEFAULT_CONFIG);
+          }
+        }
 
         // 主题切换：支持数字 01-10 或名称
         (function applyTheme(){
@@ -767,14 +804,21 @@
           alert(msg);
         });
 
-        // 主逻辑：在受限场景提示；否则立即跳转
-        if (isRestricted) {
-          showOverlay();
-        } else {
-          // 使用 replace 避免在历史栈中保留当前页
-          try { window.location.replace(TARGET_URL); }
-          catch (e) { window.location.href = TARGET_URL; }
+        function proceed() {
+          // 主逻辑：在受限场景提示；否则立即跳转
+          if (isRestricted) {
+            showOverlay();
+          } else {
+            // 使用 replace 避免在历史栈中保留当前页
+            try { window.location.replace(TARGET_URL); }
+            catch (e) { window.location.href = TARGET_URL; }
+          }
         }
+
+        // 先加载后台配置，再执行主逻辑
+        loadConfig().then(function () {
+          proceed();
+        });
       })();
     </script>
   </body>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>后台登录</title>
+  <style>
+    :root {
+      --bg-1: #0b0f1a;
+      --bg-2: #0f1225;
+      --bg-3: #121638;
+      --brand-a: #6a7cff;
+      --brand-b: #9f73ff;
+      --brand-c: #ff74d1;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", Arial, sans-serif;
+      margin: 0; color: #fff;
+      background: linear-gradient(120deg, var(--bg-1), var(--bg-2) 40%, var(--bg-3));
+      min-height: 100vh;
+    }
+    body::before {
+      content: ""; position: fixed; inset: -30% -30% -30% -30%; z-index: -1;
+      background:
+        radial-gradient(1200px 600px at 20% 20%, rgba(106,124,255,0.15), transparent 55%),
+        radial-gradient(900px 500px at 80% 30%, rgba(159,115,255,0.12), transparent 60%),
+        radial-gradient(700px 400px at 50% 80%, rgba(255,116,209,0.10), transparent 60%);
+      filter: blur(40px);
+      animation: floatBg 16s ease-in-out infinite alternate;
+    }
+    @keyframes floatBg { to { transform: translate3d(-2%, -2%, 0) scale(1.04); } }
+    .wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .inner { width: 100%; max-width: 460px; }
+    .brand { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px;
+      background: rgba(255,255,255,0.08); color: #eaf0ff; border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.30);
+    }
+    .brand::before { content:""; width: 10px; height: 10px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--brand-a), var(--brand-b) 60%, var(--brand-c));
+      box-shadow: 0 0 0 3px rgba(159,115,255,0.25);
+    }
+    .card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(14px) saturate(1.15);
+      border-radius: 18px; padding: 22px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+    }
+    .card-header { text-align: center; margin-bottom: 14px; }
+    h1 { font-size: 22px; margin: 0 0 6px; letter-spacing: .3px; }
+    .subtitle { font-size: 12px; color: #b8c6e6; }
+    label { display: block; font-size: 13px; margin: 14px 0 8px; color: #d6e0f7; }
+    .field { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 14px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+    }
+    input[type="password"], input[type="text"] {
+      flex: 1 1 auto; width: 100%; padding: 12px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(10,14,32,0.65); color: #fff; outline: none; transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    input:focus {
+      border-color: var(--brand-b);
+      box-shadow: 0 0 0 3px rgba(159,115,255,0.28), 0 10px 24px rgba(159,115,255,0.15);
+    }
+    .eye { flex: 0 0 auto; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.08);
+      color: #eaf0ff; border: 1px solid rgba(255,255,255,0.16); cursor: pointer; transition: transform .08s ease, background .15s ease;
+    }
+    .eye:hover { background: rgba(255,255,255,0.12); }
+    .eye:active { transform: scale(0.98); }
+    .btns { display: flex; gap: 12px; margin-top: 16px; }
+    button { padding: 12px 16px; border-radius: 999px; border: none; color: white; cursor: pointer; font-weight: 700; letter-spacing: .2px; }
+    .primary { background: linear-gradient(135deg, var(--brand-a) 0%, var(--brand-b) 50%, var(--brand-c) 100%);
+      box-shadow: 0 10px 28px rgba(159,115,255,0.35); transition: transform .08s ease, box-shadow .2s ease; }
+    .primary:hover { transform: translateY(-1px); box-shadow: 0 16px 36px rgba(159,115,255,0.45); }
+    .primary:active { transform: scale(0.98); }
+    .secondary { background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.20); }
+    .status { margin-top: 10px; font-size: 12px; min-height: 18px; color: #c7d3ee; }
+    .status.ok { color: #5be0a8; }
+    .status.err { color: #ff9aa2; }
+    @media (max-width: 400px) {
+      .inner { max-width: 94vw; }
+      button { padding: 11px 14px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="inner">
+      <header class="brand">跳转页管理</header>
+      <article class="card">
+        <header class="card-header">
+          <h1>后台登录</h1>
+          <p class="subtitle">请输入管理员密码以进入后台</p>
+        </header>
+        <label for="password">管理员密码</label>
+        <fieldset class="field">
+          <input id="password" type="password" placeholder="请输入密码" />
+          <button class="eye" id="togglePwd" type="button" aria-label="显示/隐藏密码">👁️</button>
+        </fieldset>
+        <nav class="btns">
+          <button class="primary" id="loginBtn">登录</button>
+          <button class="secondary" id="toIndexBtn">返回跳转页</button>
+        </nav>
+        <p class="status" id="status"></p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const els = {
+      password: document.getElementById('password'),
+      loginBtn: document.getElementById('loginBtn'),
+      toIndexBtn: document.getElementById('toIndexBtn'),
+      togglePwd: document.getElementById('togglePwd'),
+      status: document.getElementById('status')
+    };
+
+    async function login() {
+      const payload = { password: els.password.value.trim() };
+      els.status.classList.remove('ok','err');
+      els.status.textContent = '正在登录…';
+      els.loginBtn.disabled = true;
+      try {
+        const res = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          els.status.textContent = '登录成功，正在进入后台...';
+          els.status.classList.add('ok');
+          setTimeout(() => { window.location.href = '/admin'; }, 300);
+        } else {
+          const data = await res.json().catch(() => ({}));
+          els.status.textContent = data && data.error === 'invalid_password' ? '密码错误' : '登录失败';
+          els.status.classList.add('err');
+        }
+      } catch (e) {
+        els.status.textContent = '网络错误，请稍后重试';
+        els.status.classList.add('err');
+      } finally {
+        els.loginBtn.disabled = false;
+      }
+    }
+
+    els.loginBtn.addEventListener('click', login);
+    els.toIndexBtn.addEventListener('click', () => { window.location.href = '/'; });
+    // 支持回车提交
+    els.password.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') login(); });
+    // 显示/隐藏密码
+    els.togglePwd.addEventListener('click', () => {
+      const isPwd = els.password.type === 'password';
+      els.password.type = isPwd ? 'text' : 'password';
+      els.togglePwd.textContent = isPwd ? '🙈' : '👁️';
+    });
+  </script>
+</body>
+</html>
