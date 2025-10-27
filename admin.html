@@ -3,14 +3,22 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>跳转页后台配置</title>
+  <title>跳转页后台</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif; margin: 0; padding: 24px; background: #0b0f1a; color: #fff; }
-    .wrap { max-width: 720px; margin: 0 auto; }
-    h1 { font-size: 20px; margin: 0 0 12px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif; margin: 0; background: #0b0f1a; color: #fff; }
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar { width: 220px; background: #0e1320; border-right: 1px solid rgba(255,255,255,.06); display: flex; flex-direction: column; padding: 16px 12px; gap: 12px; }
+    .brand { font-weight: 700; color: #eaf0ff; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); padding: 10px 12px; border-radius: 10px; }
+    .menu { display: flex; flex-direction: column; gap: 8px; }
+    .menu button { text-align: left; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.10); background: #121826; color: #eaf0ff; cursor: pointer; font-weight: 600; }
+    .menu button.active { background: linear-gradient(135deg, #6a7cff 0%, #9f73ff 60%, #ff74d1 100%); color: #0b0f1a; border-color: transparent; }
+    .menu .logout { background: #1f2937; border-color: rgba(255,255,255,.14); color: #fff; }
+    .main { flex: 1; padding: 24px; }
+    .panel { max-width: 800px; margin: 0 auto; }
     .card { background: #121826; border-radius: 12px; padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.06); }
+    h2 { font-size: 18px; margin: 0 0 12px; }
     label { display: block; font-size: 13px; margin: 12px 0 6px; color: #cfd7e6; }
-    input[type="text"], textarea { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: #0e1320; color: #fff; outline: none; box-shadow: inset 0 1px 0 rgba(255,255,255,.04); }
+    input[type="text"], input[type="password"], textarea { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: #0e1320; color: #fff; outline: none; box-shadow: inset 0 1px 0 rgba(255,255,255,.04); }
     textarea { min-height: 72px; resize: vertical; }
     .row { display: flex; gap: 12px; }
     .row > div { flex: 1; }
@@ -20,46 +28,87 @@
     .secondary { background: #1f2937; }
     .status { margin-top: 8px; font-size: 12px; color: #a3b2cc; min-height: 16px; }
     .footer { margin-top: 18px; font-size: 12px; color: #a3b2cc; text-align: center; }
+    .hidden { display: none; }
+    @media (max-width: 840px) { .sidebar { width: 180px; } }
+    @media (max-width: 640px) { .layout { flex-direction: column; } .sidebar { width: 100%; flex-direction: row; align-items: center; } .menu { flex-direction: row; flex-wrap: wrap; }
+      .menu button { flex: 1 1 auto; } .main { padding: 16px; } }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>跳转页后台配置</h1>
-    <div class="card">
-      <label for="target_url">跳转目标域名（完整 URL）</label>
-      <input id="target_url" type="text" placeholder="例如 https://fb.qdd.ink" />
-
-      <div class="row">
-        <div>
-          <label for="contact">签名/联系链接</label>
-          <input id="contact" type="text" placeholder="例如 https://t.me/epay413" />
-        </div>
-        <div>
-          <label for="copyright">版权文案</label>
-          <input id="copyright" type="text" placeholder="例如 © 2025 qdd.ink · 保留所有权利" />
-        </div>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="brand">后台管理</div>
+      <div class="menu">
+        <button id="menuConfig" class="active">站点配置</button>
+        <button id="menuSecurity">安全设置</button>
+        <button id="menuLogout" class="logout">退出登录</button>
       </div>
-
-      <div class="btns">
-        <button class="primary" id="saveBtn">保存配置</button>
-        <button class="secondary" id="reloadBtn">重新加载</button>
-        <button class="secondary" id="logoutBtn">退出登录</button>
-      </div>
-      <div class="status" id="status"></div>
     </div>
+    <div class="main">
+      <div class="panel" id="panel-config">
+        <div class="card">
+          <h2>站点配置</h2>
+          <label for="target_url">跳转目标域名（完整 URL）</label>
+          <input id="target_url" type="text" placeholder="例如 https://fb.qdd.ink" />
+          <div class="row">
+            <div>
+              <label for="contact">签名/联系链接</label>
+              <input id="contact" type="text" placeholder="例如 https://t.me/epay413" />
+            </div>
+            <div>
+              <label for="copyright">版权文案</label>
+              <input id="copyright" type="text" placeholder="例如 © 2025 qdd.ink · 保留所有权利" />
+            </div>
+          </div>
+          <div class="btns">
+            <button class="primary" id="saveBtn">保存配置</button>
+            <button class="secondary" id="reloadBtn">重新加载</button>
+          </div>
+          <div class="status" id="status"></div>
+        </div>
+      </div>
 
-    <div class="footer">本页面仅用于配置跳转页，不对外公开。</div>
+      <div class="panel hidden" id="panel-security">
+        <div class="card">
+          <h2>安全设置</h2>
+          <label for="curPwd">当前管理员密码</label>
+          <input id="curPwd" type="password" placeholder="输入当前密码" />
+          <label for="newPwd">新密码（至少 6 位）</label>
+          <input id="newPwd" type="password" placeholder="输入新密码" />
+          <label for="confirmPwd">确认新密码</label>
+          <input id="confirmPwd" type="password" placeholder="再次输入新密码" />
+          <div class="btns">
+            <button class="primary" id="changePwdBtn">修改密码</button>
+          </div>
+          <div class="status" id="pwdStatus"></div>
+        </div>
+      </div>
+
+      <div class="footer">本页面仅用于配置跳转页，不对外公开。</div>
+    </div>
   </div>
 
   <script>
     const els = {
+      // 菜单与面板
+      menuConfig: document.getElementById('menuConfig'),
+      menuSecurity: document.getElementById('menuSecurity'),
+      menuLogout: document.getElementById('menuLogout'),
+      panelConfig: document.getElementById('panel-config'),
+      panelSecurity: document.getElementById('panel-security'),
+      // 配置字段
       target_url: document.getElementById('target_url'),
       contact: document.getElementById('contact'),
       copyright: document.getElementById('copyright'),
       status: document.getElementById('status'),
       saveBtn: document.getElementById('saveBtn'),
       reloadBtn: document.getElementById('reloadBtn'),
-      logoutBtn: document.getElementById('logoutBtn')
+      // 安全字段
+      curPwd: document.getElementById('curPwd'),
+      newPwd: document.getElementById('newPwd'),
+      confirmPwd: document.getElementById('confirmPwd'),
+      changePwdBtn: document.getElementById('changePwdBtn'),
+      pwdStatus: document.getElementById('pwdStatus')
     };
 
     async function load() {
@@ -100,15 +149,61 @@
     }
 
     async function logout() {
-      try {
-        await fetch('/logout', { method: 'POST' });
-      } catch (e) {}
+      try { await fetch('/logout', { method: 'POST' }); } catch (e) {}
       window.location.href = '/login';
     }
 
+    function switchPanel(which) {
+      const isConfig = which === 'config';
+      els.panelConfig.classList.toggle('hidden', !isConfig);
+      els.panelSecurity.classList.toggle('hidden', isConfig);
+      els.menuConfig.classList.toggle('active', isConfig);
+      els.menuSecurity.classList.toggle('active', !isConfig);
+    }
+
+    async function changePassword() {
+      const payload = {
+        current_password: (els.curPwd.value || '').trim(),
+        new_password: (els.newPwd.value || '').trim(),
+        confirm_password: (els.confirmPwd.value || '').trim()
+      };
+      els.pwdStatus.textContent = '正在提交…';
+      try {
+        const res = await fetch('/api/admin/password', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.status === 401) {
+          els.pwdStatus.textContent = '未登录或登录过期，正在跳转到登录页…';
+          setTimeout(() => { window.location.href = '/login'; }, 600);
+          return;
+        }
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data && data.ok) {
+          els.pwdStatus.textContent = '密码已更新，请重新登录验证';
+        } else {
+          const map = {
+            wrong_current: '当前密码不正确',
+            too_short: '新密码长度不足（至少 6 位）',
+            mismatch: '两次输入的新密码不一致',
+            missing_fields: '请填写完整当前与新密码'
+          };
+          els.pwdStatus.textContent = map[data && data.error] || '修改失败，请稍后重试';
+        }
+      } catch (e) {
+        els.pwdStatus.textContent = '网络错误，请稍后重试';
+      }
+    }
+
+    // 事件绑定
     els.saveBtn.addEventListener('click', save);
     els.reloadBtn.addEventListener('click', load);
-    els.logoutBtn.addEventListener('click', logout);
+    els.menuLogout.addEventListener('click', logout);
+    els.menuConfig.addEventListener('click', () => switchPanel('config'));
+    els.menuSecurity.addEventListener('click', () => switchPanel('security'));
+    els.changePwdBtn.addEventListener('click', changePassword);
+    // 初始化
+    switchPanel('config');
     load();
   </script>
 </body>
