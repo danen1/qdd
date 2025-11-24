@@ -1,825 +1,266 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="format-detection" content="telephone=no,email=no,address=no" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <title>跳转页</title>
-    <style>
-      /* 品牌与主题变量 */
-      :root {
-        color-scheme: light dark;
-        --brand-start: #4b9cff;
-        --brand-end: #7c86ff;
-        --brand-ink: #1f2328;
-        --brand-bg: #f7f8fa;
-        --surface: #fff;
-        --muted: #6b7280;
-        --accent: #2f6bff;
-        --ring: rgba(47, 107, 255, 0.18);
-      }
-      :root {
-        color-scheme: light dark;
-      }
-      html, body {
-        height: 100%;
-        margin: 0;
-      }
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-        background: var(--brand-bg);
-        color: var(--brand-ink);
-      }
-      .hidden { display: none !important; }
-      .overlay {
-        position: fixed;
-        inset: 0;
-        background:
-          radial-gradient(1200px 500px at 10% 0%, rgba(99,102,241,0.06), transparent 60%),
-          radial-gradient(1200px 500px at 90% 0%, rgba(59,130,246,0.08), transparent 60%),
-          rgba(0,0,0,0.55);
-        backdrop-filter: blur(2px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
-      }
-      .card {
-        width: min(720px, 94vw);
-        border-radius: 18px;
-        background: var(--surface);
-        box-shadow: 0 12px 36px rgba(0,0,0,0.18);
-        overflow: hidden;
-        max-height: calc(100vh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-        display: flex;
-        flex-direction: column;
-      }
-      .card__header {
-        padding: 18px 22px;
-        background: linear-gradient(90deg, var(--brand-start) 0%, var(--brand-end) 100%);
-        color: #fff;
-        font-weight: 700;
-        letter-spacing: 0.2px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .card__header svg { flex: 0 0 auto; }
-      .card__body { padding: 16px 20px 20px; overflow: auto; }
-      .brand-badge {
-        width: 24px; height: 24px;
-        border-radius: 6px;
-        background: rgba(255,255,255,0.22);
-        display: grid; place-items: center;
-      }
-      .brand-dot {
-        width: 12px; height: 12px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--brand-start), var(--brand-end));
-        box-shadow: 0 0 0 2px rgba(255,255,255,0.35) inset;
-      }
-      .device-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: #eef3ff;
-        color: #1f3e96;
-        border-radius: 999px;
-        padding: 6px 10px;
-        font-size: 12px;
-        margin: 6px 0 4px;
-      }
-      .title-wrap { display: flex; flex-direction: column; }
-      .subtitle { font-weight: 500; opacity: 0.92; font-size: 13px; }
-      .hero { font-size: 18px; font-weight: 700; }
-      .target {
-        margin: 10px 0 14px;
-        padding: 12px 14px;
-        border-radius: 12px;
-        background: #ffffff;
-        border: none;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        cursor: pointer;
-        transition: background 0.2s ease, transform 0.08s ease;
-        position: relative;
-      }
-      .target:active { transform: scale(0.995); }
-      .target::before {
-        content: '↗';
-        font-size: 16px;
-        opacity: 0.85;
-      }
-      .target .url {
-        flex: 1 1 auto;
-        min-width: 0;
-        font-size: 14px;
-        color: #0b2a66;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .target .status {
-        flex: 0 0 auto;
-        font-size: 12px;
-        color: #2563eb;
-        display: none;
-      }
-      /* 链接卡片尾部复制徽标 */
-      .chip-copy {
-        flex: 0 0 auto;
-        background: transparent;
-        color: #2153c8;
-        border: 1px solid #d4d9e6;
-        border-radius: 999px;
-        padding: 6px 10px;
-        font-size: 12px;
-        cursor: pointer;
-        transition: filter 0.2s ease, transform 0.08s ease, background 0.2s ease;
-      }
-      .chip-copy:hover { background: #f8f9fc; filter: brightness(1.02); }
-      .chip-copy:active { transform: scale(0.98); }
-      @keyframes flashCopy { 0% { background: #f3f6ff; } 20% { background: #e8f0ff; } 100% { background: #f3f6ff; } }
-      .target.ok { animation: flashCopy 1.2s ease; }
-      /* 状态提示不再显示 */
-      .steps { display: grid; gap: 12px; margin-top: 6px; }
-      .step { display: flex; gap: 12px; align-items: flex-start; }
-      .step .num {
-        flex: 0 0 26px;
-        height: 26px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--brand-start), var(--brand-end));
-        color: #fff;
-        font-weight: 700;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 13px;
-        margin-top: 2px;
-        box-shadow: 0 2px 8px var(--ring);
-      }
-      .actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 16px; align-items: stretch; }
-      .btn {
-        padding: 12px 16px;
-        border-radius: 12px;
-        border: none;
-        cursor: pointer;
-        font-size: 15px;
-        font-weight: 700;
-        box-shadow: 0 4px 14px var(--ring);
-        transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease;
-        width: 100%;
-        white-space: nowrap;
-        letter-spacing: 0.2px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      @media (max-width: 380px) {
-        .btn { font-size: 13px; padding: 10px 12px; letter-spacing: 0; }
-      }
-      .btn-primary { background: linear-gradient(135deg, var(--brand-start), var(--brand-end)); color: #fff; }
-      .btn-secondary { background: #eef3ff; color: #1f3e96; }
-      .btn:active { transform: scale(0.99); }
-      .btn-primary:hover { filter: brightness(1.05); }
-      .subtle { color: var(--muted); font-size: 13px; margin-top: 6px; }
-      .footer { color: var(--muted); font-size: 11px; text-align: center; margin-top: 12px; }
-      /* 页脚一排：设备信息 · 版权 · 签名 */
-      .footer-row { display: inline-flex; align-items: baseline; justify-content: center; gap: 6px; flex-wrap: wrap; line-height: 1.4; }
-      .footer-row > * + *::before { content: '·'; color: var(--muted); margin: 0 4px; }
-      .footer-copy { color: var(--muted); opacity: 0.9; }
-      .footer-device { color: var(--muted); font-weight: 500; }
-      .footer a { color: #475569; text-decoration: none; }
-      .footer a:hover { text-decoration: underline; }
-      /* 链接卡片内的设备信息（简版） */
-      .target .device-inline {
-        flex: 0 0 auto;
-        font-size: 11px;
-        color: var(--muted);
-        max-width: 35%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      @media (max-width: 360px) { .target .device-inline { display: none; } }
-      /* 隐藏顶部与页脚的设备信息 */
-      .device-badge { display: none !important; }
-      .footer-device { display: none !important; }
-      /* 链接卡片内的设备信息已移除 */
-      /* 渐变边框：使用遮罩伪元素，不影响主题背景 */
-      .target::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        padding: 1px;
-        background: linear-gradient(135deg, var(--brand-start), var(--brand-end));
-        -webkit-mask: 
-          linear-gradient(#000 0 0) content-box,
-          linear-gradient(#000 0 0);
-        -webkit-mask-composite: xor;
-        mask-composite: exclude;
-        pointer-events: none;
-      }
-      .hint-corner {
-        position: absolute;
-        right: 14px;
-        top: 10px;
-        color: #fff;
-        font-size: 12px;
-        opacity: 0.9;
-        user-select: none;
-      }
-      .corner-pointer { position: absolute; right: 8px; top: 8px; pointer-events: none; z-index: 10000; }
-      /* 圆角提示标签（替换旧箭头图标） */
-      .corner-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: rgba(255,255,255,0.85);
-        color: #334155;
-        border-radius: 999px;
-        padding: 6px 10px;
-        font-size: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-        border: 1px solid rgba(215,220,235,0.8);
-        letter-spacing: 0.2px;
-      }
-      .corner-tag .mark { color: #3b82f6; opacity: 0.95; }
-      @keyframes floatArrow { 0% { transform: translate(0,0); } 50% { transform: translate(-2px, 2px); } 100% { transform: translate(0,0); } }
-      .pointer-anim { animation: floatArrow 1.8s ease-in-out infinite; will-change: transform; }
-      /* 右上角文案轻微跳动动画 */
-      .bounce-text { display: inline-block; animation: bounceText 1.6s ease-in-out infinite; }
-      @keyframes bounceText {
-        0% { transform: translateY(0); }
-        50% { transform: translateY(-1px); }
-        100% { transform: translateY(0); }
-      }
-      /* 纯CSS引导箭头样式 */
-      .corner-pointer .corner-arrow {
-        opacity: 0.95;
-        width: 22px;
-        height: 22px;
-        border: 3px solid rgba(255,255,255,0.92);
-        border-left: none;
-        border-bottom: none;
-        transform: rotate(45deg);
-        border-radius: 4px;
-        box-shadow: 0 0 10px rgba(255,255,255,0.35);
-      }
-      /* 链接卡片图标优化：使用↗更简洁 */
-      .target::before {
-        content: '↗';
-        font-size: 16px;
-        opacity: 0.9;
-        color: #2456c3;
-      }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+  <title>（巨量百应）应用下载</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-      @media (prefers-color-scheme: dark) {
-        body { background: #0b0e12; color: #e5e7eb; }
-        .overlay { background:
-          radial-gradient(1200px 500px at 10% 0%, rgba(99,102,241,0.12), transparent 60%),
-          radial-gradient(1200px 500px at 90% 0%, rgba(59,130,246,0.15), transparent 60%),
-          rgba(0,0,0,0.55);
-        }
-        .card { background: #151922; box-shadow: 0 8px 24px rgba(0,0,0,0.6); }
-        .card__header { background: linear-gradient(90deg, var(--brand-start) 0%, var(--brand-end) 100%); }
-        .target { background: #0f1624; color: #c7d2fe; }
-        .btn-secondary { background: #1f2937; color: #c7d2fe; }
-        .subtle { color: #9ca3af; }
-        .step .num { background: linear-gradient(135deg, var(--brand-start), var(--brand-end)); color: #fff; box-shadow: 0 2px 8px var(--ring); }
-        .footer-guide { background: #1f2937; color: #dbeafe; border-color: #334155; }
-        .chip-copy { background: transparent; color: #93c5fd; border-color: #334155; }
-        .corner-tag { background: rgba(22,26,34,0.9); color: #cbd5e1; border-color: rgba(255,255,255,0.12); box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-        .corner-tag .mark { color: #93c5fd; }
-        .footer a { color: #cbd5e1; }
-        .footer-copy { color: #9ca3af; }
-        .footer-device { color: #e5e7eb; }
-      }
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-      /* 主题套件：10种不同风格 */
-      /* 01 极简扁平 */
-      .theme-01 .card { box-shadow: none; border: 1px solid #e5e7eb; }
-      .theme-01 .target { background: #fff; box-shadow: none; }
-      .theme-01 .chip-copy { border-color: #e5e7eb; color: #475569; }
-      .theme-01 .corner-tag { box-shadow: none; border-color: #e5e7eb; background: #fff; }
-      .theme-01 .btn { box-shadow: none; }
+    html, body {
+      height: 100%;
+      font-family: "Microsoft YaHei", sans-serif;
+      background: linear-gradient(180deg, #1e3c72, #2a5298);
+      color: #fff;
+    }
 
-      /* 02 柔和新拟态 */
-      .theme-02 body { background: #eef2f7; }
-      .theme-02 .card { background: #eef2f7; box-shadow: 8px 8px 16px #cdd3db, -8px -8px 16px #ffffff; border: none; }
-      .theme-02 .target { background: #eef2f7; box-shadow: inset 2px 2px 4px #d0d6de, inset -2px -2px 4px #f7f9fb; }
-      .theme-02 .chip-copy { background: #eef2f7; border-color: #dde2ea; color: #334155; }
-      .theme-02 .corner-tag { background: #eef2f7; border: 1px solid #dde2ea; box-shadow: 4px 4px 8px #d0d6de, -4px -4px 8px #f7f9fb; }
+    header {
+      text-align: center;
+      padding: 15px 0;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(8px);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 10;
+    }
 
-      /* 03 玻璃拟态 */
-      .theme-03 body { background: linear-gradient(135deg, #c3d9ff 0%, #f6f7fb 100%); }
-      .theme-03 .card { background: rgba(255,255,255,0.45); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); }
-      .theme-03 .target { background: rgba(255,255,255,0.35); }
-      .theme-03 .chip-copy { background: rgba(255,255,255,0.35); border-color: rgba(215,220,235,0.7); }
-      .theme-03 .corner-tag { background: rgba(255,255,255,0.5); border-color: rgba(215,220,235,0.8); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+    header .logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+      font-weight: 600;
+    }
 
-      /* 04 高对比黑白 */
-      .theme-04 body { background: #000; color: #111; }
-      .theme-04 .card { background: #fff; box-shadow: none; border: 2px solid #000; }
-      .theme-04 .target { background: #fff; }
-      .theme-04 .chip-copy { background: #000; color: #fff; border-color: #000; }
-      .theme-04 .corner-tag { background: #000; color: #fff; border-color: #000; }
-      .theme-04 .btn-primary { background: #000; color: #fff; }
-      .theme-04 .btn-secondary { background: #fff; color: #000; border: 2px solid #000; }
+    header .logo i {
+      margin-right: 8px;
+      color: #00b7ff;
+    }
 
-      /* 05 品牌渐变强化 */
-      .theme-05 .card__header { background: linear-gradient(120deg, var(--brand-start), var(--brand-end)); }
-      .theme-05 .card { border: 1px solid #cfe3ff; box-shadow: 0 8px 24px rgba(59,130,246,0.25); }
-      .theme-05 .target { background: #f6fbff; }
-      .theme-05 .chip-copy { color: #1f3e96; border-color: #cfe3ff; background: #eef6ff; }
-      .theme-05 .corner-tag { background: #eef6ff; color: #1f3e96; border-color: #cfe3ff; }
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding-top: 100px;
+      padding-bottom: 100px;
+      text-align: center;
+      min-height: 100vh;
+    }
 
-      /* 06 马卡龙柔彩 */
-      .theme-06 body { background: #fff7f1; }
-      .theme-06 .card { background: #fff; border: 1px solid #ffd6ba; box-shadow: 0 6px 18px rgba(255, 182, 150, 0.25); }
-      .theme-06 .target { background: #fffaf6; }
-      .theme-06 .chip-copy { background: #fffaf6; border-color: #ffc2a1; color: #a92e20; }
-      .theme-06 .corner-tag { background: #fffaf6; border-color: #ffd6ba; color: #a92e20; }
+    .hero-logo {
+      width: 100px;
+      height: 100px;
+      border-radius: 20px;
+      object-fit: cover;
+      box-shadow: 0 0 20px rgba(0, 200, 255, 0.5);
+      margin-bottom: 20px;
+    }
 
-      /* 07 Material 风格 */
-      .theme-07 body { background: #f3f4f6; }
-      .theme-07 .card { background: #fff; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.08); }
-      .theme-07 .target { background: #fff; }
-      .theme-07 .chip-copy { background: #e8ecff; border-color: #c7d2fe; color: #213a98; }
-      .theme-07 .corner-tag { background: #fff; border-color: #e5e7eb; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    .qrcode {
+      width: 160px;
+      height: 160px;
+      border-radius: 12px;
+      object-fit: cover;
+      box-shadow: 0 0 20px rgba(0, 200, 255, 0.4);
+      margin-bottom: 25px;
+    }
 
-      /* 08 单色灰阶 */
-      .theme-08 body { background: #f5f5f5; color: #1f2937; }
-      .theme-08 .card { background: #fff; border: 1px solid #d1d5db; box-shadow: none; }
-      .theme-08 .target { background: #fff; }
-      .theme-08 .chip-copy { background: transparent; border-color: #d1d5db; color: #374151; }
-      .theme-08 .corner-tag { background: #fff; border-color: #d1d5db; color: #374151; box-shadow: none; }
+    .btn {
+      display: block;
+      width: 80%;
+      max-width: 300px;
+      margin: 10px auto;
+      padding: 14px 0;
+      border-radius: 40px;
+      font-size: 17px;
+      font-weight: bold;
+      color: #fff;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
 
-      /* 09 终端绿风（Matrix） */
-      .theme-09 body { background: #0b0e12; color: #00ff88; }
-      .theme-09 .card { background: #0e151e; border: 1px solid #0f5132; box-shadow: 0 8px 24px rgba(0,255,136,0.15); }
-      .theme-09 .target { background: #0e151e; color: #00ff88; }
-      .theme-09 .chip-copy { background: transparent; border-color: #00ff88; color: #00ff88; }
-      .theme-09 .corner-tag { background: rgba(0,0,0,0.65); color: #00ff88; border-color: #0f5132; }
-      .theme-09 .btn-primary { background: #00ff88; color: #0b0e12; }
+    .btn-android {
+      background: linear-gradient(90deg, #00d084, #00bfa6);
+    }
 
-      /* 10 iOS 风（毛玻璃+圆角） */
-      .theme-10 body { background: #f2f5f9; }
-      .theme-10 .card { background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border: 1px solid rgba(215,220,235,0.7); box-shadow: 0 12px 28px rgba(0,0,0,0.12); }
-      .theme-10 .target { background: rgba(255,255,255,0.85); }
-      .theme-10 .chip-copy { background: rgba(255,255,255,0.8); border-color: rgba(215,220,235,0.8); color: #0b2a66; }
-      .theme-10 .corner-tag { background: rgba(255,255,255,0.9); border-color: rgba(215,220,235,0.85); box-shadow: 0 10px 24px rgba(0,0,0,0.12); }
-    </style>
-  </head>
-  <body>
-    <noscript>
-      请开启 JavaScript 以完成跳转。目标地址：
-      <a href="https://fb.qdd.ink">https://fb.qdd.ink</a>
-    </noscript>
+    .btn-android:hover {
+      background: linear-gradient(90deg, #00ffb7, #00c4a7);
+    }
 
-    <div id="overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="title">
-      <div class="corner-pointer pointer-anim" aria-hidden="true">
-        <!-- 右上角圆角标签：跳动文案 -->
-        <div class="corner-tag"><span class="bounce-text">点击···使用浏览器访问</span></div>
-      </div>
-      <div class="card">
-        <div class="card__header">
-          <div class="brand-badge" id="brandBadge" aria-hidden="true">
-            <span id="brandDot" class="brand-dot"></span>
-          </div>
-          <div class="title-wrap">
-            <div id="title" class="hero">请在浏览器中打开以继续</div>
-            <div id="subtitle" class="subtitle">外部浏览器将自动跳转到目标链接</div>
-          </div>
-          <div class="hint-corner" id="cornerHint">请点右上角菜单</div>
-        </div>
-        <div class="card__body">
-          <div id="sceneDesc">已检测到在微信或QQ内打开，此页面受限。</div>
-          <div class="device-badge" id="deviceBadge" aria-live="polite">设备与场景识别中…</div>
-          <div class="steps" id="steps">
-            <!-- 动态填充平台步骤 -->
-          </div>
+    .btn-ios {
+      background: linear-gradient(90deg, #0078ff, #7a5eff);
+    }
 
-          <div class="actions">
-            <button class="btn btn-primary" id="copyBtn" type="button">复制并打开浏览器</button>
-            <button class="btn btn-secondary" id="fallbackBtn" type="button">查看备用操作</button>
-          </div>
-          <div class="target" id="targetBox" role="button" aria-label="复制链接并在浏览器打开">
-            <span class="url" id="targetUrl">https://fb.qdd.ink</span>
-            <span class="device-inline" id="deviceInline"></span>
-            <button class="chip-copy" id="inlineCopy" type="button" aria-label="复制链接">复制</button>
-          </div>
-          <div class="subtle" id="tips">无法复制？可长按上方链接手动复制</div>
-          <div class="footer footer-row" id="footerRow">
-            <span class="footer-device" id="footerDevice">设备识别中…</span>
-            <span class="footer-copy" id="copyright">钱多多© 2025 qdd.ink · 保留所有权利</span>
-            <a class="footer-copy" id="signatureLink" href="https://t.me/epay413" target="_blank" rel="noopener noreferrer">✈️@epay413</a>
-          </div>
-        </div>
-      </div>
+    .btn-ios:hover {
+      background: linear-gradient(90deg, #3399ff, #a08fff);
+    }
+
+    .btn-tip {
+      background: linear-gradient(90deg, #b04eff, #ff4ee2);
+      font-size: 15px;
+      padding: 12px 0;
+      opacity: 0.9;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px 0;
+      font-size: 14px;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(6px);
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      color: #cfdfff;
+    }
+
+    footer .logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    footer i {
+      color: #00b7ff;
+    }
+
+    /* 微信/QQ引导遮罩 */
+    .browser-guide {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 9999;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      padding-top: 20px;
+    }
+
+    .browser-guide.show {
+      display: flex;
+    }
+
+    .guide-arrow {
+      width: 200px;
+      height: 200px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 10 L80 40 L65 40 L65 70 L35 70 L35 40 L20 40 Z" fill="%23ff6b6b" stroke="%23fff" stroke-width="2"/><text x="50" y="90" font-size="12" fill="%23fff" text-anchor="middle">点击这里</text></svg>') no-repeat center;
+      background-size: contain;
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .guide-text {
+      margin-top: 220px;
+      text-align: center;
+      padding: 0 30px;
+    }
+
+    .guide-text h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #ff6b6b;
+    }
+
+    .guide-text p {
+      font-size: 18px;
+      line-height: 2;
+      margin: 10px 0;
+    }
+
+    .guide-text .highlight {
+      color: #00b7ff;
+      font-weight: bold;
+      font-size: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 微信/QQ浏览器引导遮罩 -->
+  <div class="browser-guide" id="browserGuide">
+    <div class="guide-arrow"></div>
+    <div class="guide-text">
+      <h2>⚠️ 温馨提示 ⚠️</h2>
+      <p>检测到您在微信/QQ内打开</p>
+      <p>请点击右上角 <span class="highlight">「···」</span> 菜单</p>
+      <p>选择 <span class="highlight">「在浏览器中打开」</span></p>
+      <p>即可正常下载应用</p>
+      <p style="margin-top: 30px; font-size: 16px; color: #aaa;">（应用在微信/QQ内无法直接下载）</p>
     </div>
+  </div>
 
-    <script>
-      (function () {
-        var TARGET_URL = 'https://fb.qdd.ink';
-        var DEFAULT_CONFIG = {
-          target_url: TARGET_URL,
-          contact: 'https://t.me/epay413',
-          copyright: '© 2025 qdd.ink · 保留所有权利'
-        };
-        var CONFIG = DEFAULT_CONFIG;
-        var ua = navigator.userAgent || '';
-        var uaLow = ua.toLowerCase();
-        var params = new URLSearchParams(window.location.search);
+  <header>
+    <div class="logo">
+      <i class="fas fa-rocket"></i>
+      <span>（巨量百应）应用下载</span>
+    </div>
+  </header>
 
-        // 场景识别（避免误伤第三方浏览器，如 MQQBrowser）
-        var isWeChat = uaLow.indexOf('micromessenger') > -1; // 微信内置浏览器
-        var isQQApp = / QQ\//.test(ua) || /qq\//i.test(uaLow); // QQ App 内置 WebView
-        var isRestricted = isWeChat || isQQApp;
+  <main>
+    <img src="https://zejiang8571.cn-nb1.rains3.com/juliang.png" alt="应用LOGO" class="hero-logo">
+    <img src="https://zejiang8571.cn-nb1.rains3.com/ju12.png" alt="下载二维码" class="qrcode">
 
-        // 平台识别
-        var isIOS = /(iphone|ipad|ipod)/i.test(uaLow);
-        var isAndroid = /android/i.test(uaLow);
+    <a href="https://passbuy.me/juliangbaiying" class="btn btn-android">安卓下载</a>
+    <a href="https://nfaqosf.wszuzhen.com/d/3gpdeu8k4tzutkf" class="btn btn-ios">苹果下载1</a>
+    <a href="https://nfaqosf.wszuzhen.com/d/3gpdeu8k4tzutkf" class="btn btn-tip">苹果下载2</a>
+  </main>
 
-        // 模拟参数：?simulate=wechat|qq|browser &platform=ios|android
-        (function applySimulation(){
-          var simulate = params.get('simulate');
-          var platform = params.get('platform');
-          if (platform === 'ios') { isIOS = true; isAndroid = false; }
-          if (platform === 'android') { isAndroid = true; isIOS = false; }
+  <footer>
+    <div class="logo">
+      <i class="fas fa-shield-alt"></i>
+      <span>安全、高效、合规</span>
+    </div>
+    <p>&copy; 2025 应用已通过安全中心检测</p>
+  </footer>
 
-          if (simulate === 'wechat') {
-            isWeChat = true; isQQApp = false; isRestricted = true;
-          } else if (simulate === 'qq') {
-            isQQApp = true; isWeChat = false; isRestricted = true;
-          } else if (simulate === 'browser') {
-            isWeChat = false; isQQApp = false; isRestricted = false;
+  <script>
+    // 检测是否在微信或QQ内置浏览器中打开
+    function isWechatOrQQ() {
+      var ua = navigator.userAgent.toLowerCase();
+      return ua.indexOf('micromessenger') !== -1 || ua.indexOf('qq') !== -1;
+    }
+
+    // 页面加载时检测
+    window.onload = function() {
+      if (isWechatOrQQ()) {
+        document.getElementById('browserGuide').classList.add('show');
+      }
+    };
+
+    // 监听下载按钮点击
+    document.addEventListener('DOMContentLoaded', function() {
+      var downloadLinks = document.querySelectorAll('.btn');
+      downloadLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+          if (isWechatOrQQ()) {
+            e.preventDefault();
+            document.getElementById('browserGuide').classList.add('show');
           }
-        })();
-
-        var overlay = document.getElementById('overlay');
-        var stepsEl = document.getElementById('steps');
-        var copyBtn = document.getElementById('copyBtn');
-        var fallbackBtn = document.getElementById('fallbackBtn');
-        var cornerHint = document.getElementById('cornerHint');
-        var sceneDesc = document.getElementById('sceneDesc');
-        var targetUrlEl = document.getElementById('targetUrl');
-        var targetBox = document.getElementById('targetBox');
-        var inlineCopyEl = document.getElementById('inlineCopy');
-        var deviceInlineEl = document.getElementById('deviceInline');
-        var subtitleEl = document.getElementById('subtitle');
-        var deviceBadgeEl = document.getElementById('deviceBadge');
-        var footerDeviceEl = document.getElementById('footerDevice');
-        var signatureLinkEl = document.getElementById('signatureLink');
-        var copyrightEl = document.getElementById('copyright');
-
-        targetUrlEl.textContent = TARGET_URL;
-        // 联系方式可通过 ?contact=URL 覆盖，默认指向 Telegram
-        var contactUrl = params.get('contact') || (CONFIG.contact || 'https://t.me/epay413');
-        if (signatureLinkEl) { signatureLinkEl.href = contactUrl; }
-        if (copyrightEl && CONFIG.copyright) { copyrightEl.textContent = CONFIG.copyright; }
-
-        function applyConfig(cfg) {
-          CONFIG = Object.assign({}, DEFAULT_CONFIG, cfg || {});
-          if (CONFIG && typeof CONFIG.target_url === 'string' && CONFIG.target_url.trim()) {
-            TARGET_URL = CONFIG.target_url.trim();
-          }
-          // 若无 URL 覆盖，则应用后台的 contact
-          if (!params.get('contact') && signatureLinkEl && CONFIG.contact) {
-            signatureLinkEl.href = CONFIG.contact;
-          }
-          if (copyrightEl && CONFIG.copyright) {
-            copyrightEl.textContent = CONFIG.copyright;
-          }
-          if (targetUrlEl) targetUrlEl.textContent = TARGET_URL;
-        }
-
-        async function loadConfig() {
-          try {
-            var res = await fetch('/api/config');
-            if (res && res.ok) {
-              var data = await res.json();
-              applyConfig(data);
-            } else {
-              applyConfig(DEFAULT_CONFIG);
-            }
-          } catch (e) {
-            applyConfig(DEFAULT_CONFIG);
-          }
-        }
-
-        // 主题切换：支持数字 01-10 或名称
-        (function applyTheme(){
-          var theme = (params.get('theme') || '').toLowerCase();
-          var map = {
-            '01': 'theme-01', 'minimal': 'theme-01',
-            '02': 'theme-02', 'neumorph': 'theme-02',
-            '03': 'theme-03', 'glass': 'theme-03',
-            '04': 'theme-04', 'contrast': 'theme-04',
-            '05': 'theme-05', 'brand': 'theme-05',
-            '06': 'theme-06', 'pastel': 'theme-06',
-            '07': 'theme-07', 'material': 'theme-07',
-            '08': 'theme-08', 'mono': 'theme-08',
-            '09': 'theme-09', 'matrix': 'theme-09',
-            '10': 'theme-10', 'ios': 'theme-10'
-          };
-          var cls = map[theme];
-          if (!cls && /^\d+$/.test(theme)) {
-            var n = ('0' + theme).slice(-2);
-            cls = map[n];
-          }
-          if (cls) { document.body.classList.add(cls); }
-        })();
-
-        // 解析应用版本（微信/QQ）
-        function parseAppVersion(uaStr) {
-          var m = uaStr.match(/MicroMessenger\/([\d\.]+)/);
-          if (m) return m[1];
-          m = uaStr.match(/QQ\/([\d\.]+)/);
-          if (m) return m[1];
-          return '';
-        }
-
-        // 解析操作系统版本
-        function parseOSVersion() {
-          if (isIOS) {
-            var m = ua.match(/OS\s([\d_]+)/i);
-            if (m) return 'iOS ' + m[1].replace(/_/g, '.');
-            return 'iOS';
-          }
-          if (isAndroid) {
-            var m = ua.match(/Android\s([\d\.]+)/i);
-            if (m) return 'Android ' + m[1];
-            return 'Android';
-          }
-          return '';
-        }
-
-        // iOS机型识别（基于屏幕尺寸 + DPR，近似推断，优先显示最新机型）
-        function detectIOSModel() {
-          var w = Math.min(window.screen.width, window.screen.height);
-          var h = Math.max(window.screen.width, window.screen.height);
-          var dpr = window.devicePixelRatio || 1;
-          var key = w + 'x' + h + '@' + dpr;
-          var map = {
-            '320x568@2': 'iPhone SE (第一代)',
-            '375x667@2': 'iPhone 8/SE (第二/三代)',
-            '414x736@3': 'iPhone 8 Plus',
-            '375x812@3': 'iPhone 11 Pro',
-            '414x896@2': 'iPhone 11',
-            '414x896@3': 'iPhone 11 Pro Max',
-            '360x780@3': 'iPhone 13 mini',
-            '390x844@3': 'iPhone 15',
-            '393x852@3': 'iPhone 15 Pro',
-            '430x932@3': 'iPhone 15 Pro Max',
-            '428x926@3': 'iPhone 14 Plus'
-          };
-          var model = map[key];
-          if (model) return model;
-          if (/ipad/i.test(uaLow)) return 'iPad';
-          if (/iphone/i.test(uaLow)) return 'iPhone';
-          if (/ipod/i.test(uaLow)) return 'iPod';
-          return 'iOS 设备';
-        }
-
-        // Android 品牌+机型识别（启发式）
-        function parseAndroidBrandModel() {
-          var brandLabel = 'Android 设备';
-          var model = '';
-          // 常见 UA 中的机型位置
-          var m1 = ua.match(/Android[^;]*;\s*([^;\)]+)\)/); // Chrome 风格
-          var m2 = ua.match(/;\s*([^;]+)\s+Build\//); // WeChat/QQ 风格
-          if (m1 && m1[1]) model = m1[1].trim();
-          else if (m2 && m2[1]) model = m2[1].trim();
-
-          var brandMap = [
-            { re: /Samsung|SM-|SAMSUNG/i, brand: '三星' },
-            { re: /HUAWEI|HONOR/i, brand: '华为/荣耀' },
-            { re: /Xiaomi|MI|Redmi|POCO/i, brand: '小米/Redmi/POCO' },
-            { re: /OPPO|CPH/i, brand: 'OPPO' },
-            { re: /vivo|V\d{3}/i, brand: 'vivo' },
-            { re: /OnePlus|GM|HD\d{2}/i, brand: '一加' },
-            { re: /Pixel/i, brand: '谷歌 Pixel' },
-            { re: /Nokia/i, brand: '诺基亚' },
-            { re: /Meizu|M\d{4}/i, brand: '魅族' },
-            { re: /ZTE|Axon|Blade/i, brand: '中兴' },
-            { re: /Lenovo|L\d{4}/i, brand: '联想' },
-            { re: /Motorola|moto|XT\d+/i, brand: '摩托罗拉' },
-            { re: /Sony|Xperia/i, brand: '索尼' },
-            { re: /LG-|LM-|H\d{3}/i, brand: 'LG' },
-            { re: /ASUS|ROG|Zenfone/i, brand: '华硕/ROG' },
-            { re: /Nubia|NX\d+/i, brand: '努比亚/红魔' },
-            { re: /Black Shark|SKR-/i, brand: '黑鲨' },
-            { re: /Smartisan/i, brand: '锤子' },
-            { re: /Coolpad/i, brand: '酷派' },
-            { re: /LeEco|LeMobile/i, brand: '乐视' },
-            { re: /Hisense/i, brand: '海信' },
-            { re: /Sharp/i, brand: '夏普' },
-            { re: /TCL|Alcatel/i, brand: 'TCL/阿尔卡特' },
-            { re: /DOOGEE/i, brand: 'DOOGEE' },
-            { re: /Ulefone/i, brand: 'Ulefone' },
-            { re: /Oukitel/i, brand: 'Oukitel' },
-            { re: /Tecno/i, brand: 'Tecno' },
-            { re: /Infinix/i, brand: 'Infinix' },
-            { re: /itel/i, brand: 'itel' },
-            { re: /Realme/i, brand: 'realme' },
-            { re: /Transsion/i, brand: '传音' }
-          ];
-          for (var i = 0; i < brandMap.length; i++) {
-            if (brandMap[i].re.test(ua) || (model && brandMap[i].re.test(model))) {
-              brandLabel = brandMap[i].brand;
-              break;
-            }
-          }
-          return brandLabel + (model ? (' ' + model) : '');
-        }
-
-        // 解析设备型号/品牌（iOS基于屏幕尺寸近似；Android基于UA特征）
-        function parseDeviceLabel() {
-          if (isIOS) {
-            return detectIOSModel();
-          }
-          if (isAndroid) {
-            var heuristics = [
-              { re: /SM-|Samsung/i, label: 'Samsung' },
-              { re: /HUAWEI|HONOR/i, label: 'Huawei/Honor' },
-              { re: /Xiaomi|MI|Redmi/i, label: 'Xiaomi/Redmi' },
-              { re: /OPPO|CPH/i, label: 'OPPO' },
-              { re: /vivo/i, label: 'vivo' },
-              { re: /OnePlus/i, label: 'OnePlus' },
-              { re: /Pixel/i, label: 'Pixel' },
-              { re: /Nokia/i, label: 'Nokia' }
-            ];
-            for (var i = 0; i < heuristics.length; i++) {
-              if (heuristics[i].re.test(ua)) return heuristics[i].label;
-            }
-            return 'Android 设备';
-          }
-          return '未知设备';
-        }
-
-        function setBrandTheme() {
-          var root = document.documentElement;
-          if (isWeChat) {
-            root.style.setProperty('--brand-start', '#06C160');
-            root.style.setProperty('--brand-end', '#25AE5F');
-            subtitleEl.textContent = '微信内打开：请点击右上角 ··· 选择外部浏览器';
-          } else if (isQQApp) {
-            root.style.setProperty('--brand-start', '#2D8CF0');
-            root.style.setProperty('--brand-end', '#6FB3FF');
-            subtitleEl.textContent = 'QQ内打开：请点击右上角 ··· 选择外部浏览器';
-          }
-          var deviceLabel = isAndroid ? parseAndroidBrandModel() : parseDeviceLabel();
-          var osVer = parseOSVersion();
-          var deviceType = isIOS ? '苹果' : (isAndroid ? '安卓' : '设备');
-          var envUnified = isWeChat ? '微信' : (isQQApp ? 'QQ' : '浏览器');
-          var label = deviceType + ' ' + deviceLabel + (osVer ? (' ' + osVer) : '') + ' · ' + envUnified;
-          var inlineLabel = deviceType + ' ' + deviceLabel;
-          if (/设备$/.test(deviceLabel) || /未知设备/.test(deviceLabel)) {
-            inlineLabel = deviceType;
-          }
-          if (deviceBadgeEl) deviceBadgeEl.textContent = label;
-          if (footerDeviceEl) footerDeviceEl.textContent = label;
-          if (deviceInlineEl) deviceInlineEl.textContent = inlineLabel;
-        }
-
-        function renderSteps() {
-          var steps = [];
-          if (isWeChat) {
-            sceneDesc.textContent = '检测到您正在微信内打开，微信会限制直接打开外部浏览器。';
-            if (isIOS) {
-              cornerHint.textContent = '点击右上角 ··· 菜单';
-              steps = [
-                '点击右上角 ··· 菜单',
-                '选择 “在 Safari 中打开”',
-                '在 Safari 中自动跳转到目标链接'
-              ];
-            } else {
-              cornerHint.textContent = '点击右上角菜单';
-              steps = [
-                '点击右上角菜单按钮',
-                '选择 “在浏览器中打开” 或 “使用默认浏览器打开”',
-                '在外部浏览器自动跳转到目标链接'
-              ];
-            }
-          } else if (isQQApp) {
-            sceneDesc.textContent = '检测到您正在QQ内打开，QQ会限制直接打开外部浏览器。';
-            if (isIOS) {
-              cornerHint.textContent = '点击右上角 ··· 菜单';
-              steps = [
-                '点击右上角 ··· 菜单',
-                '选择 “在 Safari 中打开”',
-                '在 Safari 中自动跳转到目标链接'
-              ];
-            } else {
-              cornerHint.textContent = '点击右上角菜单';
-              steps = [
-                '点击右上角菜单按钮',
-                '选择 “在浏览器中打开” 或 “使用默认浏览器打开”',
-                '在外部浏览器自动跳转到目标链接'
-              ];
-            }
-          }
-
-          stepsEl.innerHTML = '';
-          steps.forEach(function (text, i) {
-            var item = document.createElement('div');
-            item.className = 'step';
-            item.innerHTML = '<div class="num">' + (i+1) + '</div><div class="text">' + text + '</div>';
-            stepsEl.appendChild(item);
-          });
-        }
-
-        function showOverlay() {
-          overlay.classList.remove('hidden');
-          setBrandTheme();
-          renderSteps();
-        }
-
-        function tryCopy(text) {
-          // 优先使用现代 API（在 https / localhost 等安全上下文可用）
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text).then(function () {
-              toast('链接已复制，请到外部浏览器粘贴打开');
-            }).catch(function () {
-              legacyCopy(text);
-            });
-          } else {
-            legacyCopy(text);
-          }
-        }
-
-        function legacyCopy(text) {
-          var input = document.createElement('input');
-          input.value = text;
-          document.body.appendChild(input);
-          input.select();
-          try { document.execCommand('copy'); toast('链接已复制'); }
-          catch (e) { toast('复制失败，请长按上方链接手动复制'); }
-          document.body.removeChild(input);
-        }
-
-        function toast(msg) {
-          var tip = document.createElement('div');
-          tip.textContent = msg;
-          tip.style.position = 'fixed';
-          tip.style.left = '50%';
-          tip.style.top = '20%';
-          tip.style.transform = 'translate(-50%, -50%)';
-          tip.style.background = 'rgba(0,0,0,0.8)';
-          tip.style.color = '#fff';
-          tip.style.padding = '8px 12px';
-          tip.style.borderRadius = '8px';
-          tip.style.zIndex = '10000';
-          document.body.appendChild(tip);
-          setTimeout(function () { document.body.removeChild(tip); }, 1500);
-        }
-
-        copyBtn.addEventListener('click', function () { tryCopy(TARGET_URL); });
-        if (inlineCopyEl) {
-          inlineCopyEl.addEventListener('click', function (e) {
-            e.stopPropagation();
-            tryCopy(TARGET_URL);
-            targetBox.classList.add('ok');
-            // 状态文案已移除
-            setTimeout(function () { targetBox.classList.remove('ok'); }, 1600);
-          });
-        }
-        targetBox.addEventListener('click', function () {
-          tryCopy(TARGET_URL);
-          targetBox.classList.add('ok');
-          // 状态文案已移除
-          setTimeout(function () {
-            targetBox.classList.remove('ok');
-          }, 1600);
         });
-        fallbackBtn.addEventListener('click', function () {
-          var msg = isIOS
-            ? '如果看到“不能打开页面”或没有外部浏览器选项：\n\n1）复制上方链接\n2）回到主屏，打开 Safari\n3）粘贴并访问\n'
-            : '如果没有“在浏览器中打开”选项或打不开：\n\n1）复制上方链接\n2）返回桌面，打开手机默认浏览器（Chrome/系统浏览器）\n3）粘贴并访问\n';
-          alert(msg);
-        });
-
-        function proceed() {
-          // 主逻辑：在受限场景提示；否则立即跳转
-          if (isRestricted) {
-            showOverlay();
-          } else {
-            // 使用 replace 避免在历史栈中保留当前页
-            try { window.location.replace(TARGET_URL); }
-            catch (e) { window.location.href = TARGET_URL; }
-          }
-        }
-
-        // 先加载后台配置，再执行主逻辑
-        loadConfig().then(function () {
-          proceed();
-        });
-      })();
-    </script>
-  </body>
+      });
+    });
+  </script>
+</body>
 </html>
